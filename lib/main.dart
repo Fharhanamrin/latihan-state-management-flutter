@@ -1,62 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'done_module_provider.dart';
-import './pages/done_module_list.dart';
-import './pages/module_list.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:latihan_state_management_flutter/model/Album.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => DoneModuleProvider(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: ModulePage(),
-      ),
+    return MaterialApp(
+      home: MyHome(),
     );
-    // MultiProvider(
-    //   providers: [
-    //     ChangeNotifierProvider(create: (_) => Counter()),
-    //   ],
-    //   child: const MyApp(),
-    // ),
   }
 }
 
-class ModulePage extends StatefulWidget {
+class MyHome extends StatefulWidget {
+  const MyHome({Key? key}) : super(key: key);
+
   @override
-  State<ModulePage> createState() => _ModulePageState();
+  State<MyHome> createState() => _MyHomeState();
 }
 
-class _ModulePageState extends State<ModulePage> {
+class _MyHomeState extends State<MyHome> {
+  late Future<Album> _futureAlbum;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureAlbum = fetchAlbum();
+  }
+
+  Future<Album> fetchAlbum() async {
+    final response = await http
+        .get(Uri.parse('https://jsonplaceholder.typicode.com/albums/1'));
+
+    if (response.statusCode == 200) {
+      // print(Album.fromJson(json.decode(response.body)));
+      return Album.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load album');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Memulai Pemrograman Dengan Dart'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.done),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DoneModuleList(),
-                ),
-              );
-            },
-          ),
-        ],
+      appBar: AppBar(),
+      body: FutureBuilder<Album>(
+        future: _futureAlbum,
+        builder: (context, snapshot) {
+          var state = snapshot.connectionState;
+          if (state != ConnectionState.done) {
+            return Center(child: CircularProgressIndicator());
+          } else {
+            // print(snapshot.data);
+
+            print(snapshot.data?.title);
+            if (snapshot.hasData) {
+              return Text(snapshot.data!.title);
+            } else if (snapshot.hasError) {
+              return Center(child: Text("${snapshot.error}"));
+            } else {
+              return Text('');
+            }
+          }
+        },
       ),
-      body: ModuleList(),
     );
   }
 }
