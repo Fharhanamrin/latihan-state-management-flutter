@@ -1,8 +1,9 @@
+import 'package:latihan_state_management_flutter/common/styles.dart';
+import 'package:latihan_state_management_flutter/data/model/article.dart';
+import 'package:latihan_state_management_flutter/ui/article_detail_page.dart';
+import 'package:latihan_state_management_flutter/ui/article_web_view.dart';
+import 'package:latihan_state_management_flutter/ui/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'done_module_provider.dart';
-import './pages/done_module_list.dart';
-import './pages/module_list.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,52 +12,45 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => DoneModuleProvider(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+    return MaterialApp(
+      title: 'News App',
+      theme: ThemeData(
+        colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: primaryColor,
+              onPrimary: Colors.black,
+              secondary: secondaryColor,
+            ),
+        scaffoldBackgroundColor: Colors.white,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: myTextTheme,
+        appBarTheme: AppBarTheme(elevation: 0),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          selectedItemColor: secondaryColor,
+          unselectedItemColor: Colors.grey,
         ),
-        home: ModulePage(),
-      ),
-    );
-    // MultiProvider(
-    //   providers: [
-    //     ChangeNotifierProvider(create: (_) => Counter()),
-    //   ],
-    //   child: const MyApp(),
-    // ),
-  }
-}
-
-class ModulePage extends StatefulWidget {
-  @override
-  State<ModulePage> createState() => _ModulePageState();
-}
-
-class _ModulePageState extends State<ModulePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Memulai Pemrograman Dengan Dart'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.done),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DoneModuleList(),
-                ),
-              );
-            },
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            primary: secondaryColor,
+            onPrimary: Colors.white,
+            textStyle: TextStyle(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(0),
+              ),
+            ),
           ),
-        ],
+        ),
       ),
-      body: ModuleList(),
+      initialRoute: HomePage.routeName,
+      routes: {
+        HomePage.routeName: (context) => HomePage(),
+        ArticleDetailPage.routeName: (context) => ArticleDetailPage(
+              article: ModalRoute.of(context)?.settings.arguments as Article,
+            ),
+        ArticleWebView.routeName: (context) => ArticleWebView(
+              url: ModalRoute.of(context)?.settings.arguments as String,
+            ),
+      },
     );
   }
 }
